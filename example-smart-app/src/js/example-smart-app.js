@@ -1,4 +1,17 @@
+extractData().then(
+        //Display Patient Demographics and Observations if extractData was success
+        function(p) {
+          drawVisualization(p);
+        },
 
+        //Display 'Failed to call FHIR Service' if extractData failed
+        function() {
+          $('#loading').hide();
+          $('#errors').html('<p> Failed to call FHIR Service </p>');
+        }
+      );
+	  
+	  
 function extractData() {
     var ret = $.Deferred();
 
@@ -12,30 +25,33 @@ function extractData() {
       if (smart.hasOwnProperty('patient')) {
         var patient = smart.patient;
         var pt = patient.read();
-        var obv = smart.patient.api.fetchAll({
-                    type: 'Observation',
-                    query: {
-                      code: {
-                        $or: ['http://loinc.org|8302-2', //height
-							  'http://loinc.org|2085-9', //hdl
-                              'http://loinc.org|2089-1', //ldl
-							  'http://loinc.org|85354-9' //bp
-							 ]
+        var obv = smart.api.fetchAll({
+                    "type": 'Observation',
+                    "query": {
+		      "patient": smart.patient.id,
+		      "_count": 100,
+                      "code": {
+                        "$or": ['http://loinc.org|8302-2', 'http://loinc.org|85354-9',
+                              'http://loinc.org|2085-9',
+                              'http://loinc.org|2089-1', 'http://loinc.org|8310-5']
                       },
-					  date: 'gt2020-01-01'
+					  "date": 'gt2020-01-01',
+					  "category": 'vital-signs'
                     }
                   });
 		
         var alg = smart.patient.api.fetchAll({
                     "type": 'AllergyIntolerance',
                     "query": {
-                      "clinical-status": 'active'
+                      "clinical-status": 'active',
+		      "_count": 100
                     }
                   });
 
         $.when(pt, obv, alg).fail(onError);
 
         $.when(pt, obv, alg).done(function(patient, obv, allergies) {
+		console.log(smart.patient);
 		  console.log(patient);
 		  console.log(obv);
 		  console.log(allergies);
@@ -46,7 +62,7 @@ function extractData() {
           var monthIndex = dob.getMonth() + 1;
           var year = dob.getFullYear();
 
-          var dobStr = monthIndex + '/' + day + '/' + year;
+          var dobStr = patient.birthDate;//monthIndex + '/' + day + '/' + year;
           var fname = '';
           var lname = '';
 
@@ -56,8 +72,10 @@ function extractData() {
           }
 
           var height = byCodes('8302-2');
+		  //old discouraged BP 55284-4
           var systolicbp = getBloodPressureValue(byCodes('85354-9'),'8480-6');
           var diastolicbp = getBloodPressureValue(byCodes('85354-9'),'8462-4');
+		  var temps = byCodes('8310-5');
           var hdl = byCodes('2085-9');
           var ldl = byCodes('2089-1');
 		  var allergyTable = "<table>";
@@ -72,7 +90,7 @@ function extractData() {
 			  allergyTable += "<tr><td>"+allergies[i].code.text+"</td><td>"+reactionStr.join(", ")+"</td></tr>";
 		  }
 		  if (allergyLen === 0) {
-			  allergyTable += "<tr><td>No Allergies Found</td></tr>";
+			  allergyTable += "<tr><td>No Allergies Documented</td></tr>";
 		  }
 		  allergyTable += "</table>";
 
@@ -94,6 +112,7 @@ function extractData() {
 
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
+		  p.temp = getQuantityValueAndUnit(temps[0]);
 		  
 		  p.allergies = allergyTable;
 
@@ -121,6 +140,7 @@ function defaultPatient(){
       diastolicbp: {value: ''},
       ldl: {value: ''},
       hdl: {value: ''},
+	  temp: {value: ''},
 	  allergies: {value: ''}
     };
 }
@@ -187,7 +207,7 @@ function drawVisualization(p) {
     $('#diastolicbp').html(p.diastolicbp);
     $('#ldl').html(p.ldl);
     $('#hdl').html(p.hdl);
+	$('#temperature').html(p.temp);
 	$('#allergyIntolerance').html(p.allergies);
 	
 };
-
