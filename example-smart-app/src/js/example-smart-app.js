@@ -15,13 +15,14 @@ function extractData() {
         var obv = smart.patient.api.fetchAll({
                     type: 'Observation',
                     query: {
-                      /*code: {
-                        $or: ['http://loinc.org|8302-2', 'http://loinc.org|8462-4',
-                              'http://loinc.org|8480-6', 'http://loinc.org|2085-9',
-                              'http://loinc.org|2089-1', 'http://loinc.org|55284-4']
-                      },*/
-					  date: 'gt2020-01-01',
-					  category: 'vital-signs'
+                      code: {
+                        $or: ['http://loinc.org|8302-2', //height
+							  'http://loinc.org|2085-9', //hdl
+                              'http://loinc.org|2089-1', //ldl
+							  'http://loinc.org|85354-9' //bp
+							 ]
+                      },
+					  date: 'gt2020-01-01'
                     }
                   });
 		
@@ -55,8 +56,8 @@ function extractData() {
           }
 
           var height = byCodes('8302-2');
-          var systolicbp = getBloodPressureValue(byCodes('55284-4'),'8480-6');
-          var diastolicbp = getBloodPressureValue(byCodes('55284-4'),'8462-4');
+          var systolicbp = getBloodPressureValue(byCodes('85354-9'),'8480-6');
+          var diastolicbp = getBloodPressureValue(byCodes('85354-9'),'8462-4');
           var hdl = byCodes('2085-9');
           var ldl = byCodes('2089-1');
 		  var allergyTable = "<table>";
