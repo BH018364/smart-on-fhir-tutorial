@@ -179,7 +179,9 @@ function extractData() {
 					  reactionStr.push(allergies[i].reaction[j].manifestation[0].text);
 				  }
 			  }
-			  allergyTable += "<tr><td>"+allergies[i].code.text+"</td><td>"+reactionStr.join(", ")+"</td></tr>";
+			  if (allergies[i].code !== undefined && allergies[i].code.text !== undefined) {
+			  		allergyTable += "<tr><td>"+allergies[i].code.text+"</td><td>"+reactionStr.join(", ")+"</td></tr>";
+			  }
 		  }
 		  if (allergyLen === 0) {
 			  allergyTable += "<tr><td>No Allergies Documented</td></tr>";
