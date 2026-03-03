@@ -140,13 +140,17 @@ function extractData() {
                     }
                   });
 
-        $.when(pt, obv, alg).fail(onError);
+        var enc = smart.patient.api.fetchAll({
+                    "type": 'Encounter'
+                  });
+        $.when(pt, obv, alg, enc).fail(onError);
 
-        $.when(pt, obv, alg).done(function(patient, obv, allergies) {
-		console.log(smart.patient);
+        $.when(pt, obv, alg, enc).done(function(patient, obv, allergies, encounters) {
+		  console.log(smart.patient);
 		  console.log(patient);
 		  console.log(obv);
 		  console.log(allergies);
+		  console.log(encounters);
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
