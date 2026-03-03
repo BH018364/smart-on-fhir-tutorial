@@ -141,7 +141,10 @@ function extractData() {
                   });
 
         var enc = smart.patient.api.fetchAll({
-                    "type": 'Encounter'
+                    "type": 'Encounter',
+					"query": {
+						"_count":100
+					}
                   });
         $.when(pt, obv, alg, enc).fail(onError);
 
